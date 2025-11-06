@@ -26,7 +26,7 @@ const REGION_DATABASE: Record<string, RegionData> = {
     pestRisk: "Armyworm",
   },
   maharashtra: {
-    region: "Maharashtra",
+    region: "Telangana",
     avgTemp: 32,
     rainfall: 80,
     soilType: "Black Soil",

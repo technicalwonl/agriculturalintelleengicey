@@ -168,27 +168,33 @@ const translations: Record<SupportedLanguage, TranslationKey> = {
   },
 }
 
+import { safeLocalStorage } from './storage';
+
 export class LanguageManager {
   private currentLanguage: SupportedLanguage = "en"
 
   constructor() {
-    // Get language from browser or localStorage
-    const saved = localStorage.getItem("app_language")
-    if (saved && Object.keys(translations).includes(saved)) {
-      this.currentLanguage = saved as SupportedLanguage
-    } else {
-      const browserLang = navigator.language.split("-")[0]
-      if (Object.keys(translations).includes(browserLang)) {
-        this.currentLanguage = browserLang as SupportedLanguage
+    // Get language from browser or localStorage (browser-side only)
+    if (typeof window !== 'undefined') {
+      const saved = safeLocalStorage.getItem("app_language");
+      if (saved && Object.keys(translations).includes(saved)) {
+        this.currentLanguage = saved as SupportedLanguage;
+      } else {
+        const browserLang = navigator.language.split("-")[0];
+        if (Object.keys(translations).includes(browserLang)) {
+          this.currentLanguage = browserLang as SupportedLanguage;
+        }
       }
     }
   }
 
   setLanguage(lang: SupportedLanguage): void {
     if (Object.keys(translations).includes(lang)) {
-      this.currentLanguage = lang
-      localStorage.setItem("app_language", lang)
-      window.location.reload() // Reload to apply language
+      this.currentLanguage = lang;
+      safeLocalStorage.setItem("app_language", lang);
+      if (typeof window !== 'undefined') {
+        window.location.reload(); // Reload to apply language
+      }
     }
   }
 

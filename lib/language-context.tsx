@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { translations, type LanguageCode } from "@/lib/language-translations"
+import { safeLocalStorage } from "./storage"
 
 interface LanguageContextType {
   language: LanguageCode
@@ -17,17 +18,19 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Load saved language on mount
-    const saved = localStorage.getItem("language") as LanguageCode
-    if (saved && translations[saved]) {
-      setLanguageState(saved)
+    // Load saved language on mount (client-side only)
+    if (typeof window !== 'undefined') {
+      const saved = safeLocalStorage.getItem("language") as LanguageCode;
+      if (saved && translations[saved]) {
+        setLanguageState(saved);
+      }
+      setMounted(true);
     }
-    setMounted(true)
   }, [])
 
   const setLanguage = (lang: LanguageCode) => {
-    setLanguageState(lang)
-    localStorage.setItem("language", lang)
+    setLanguageState(lang);
+    safeLocalStorage.setItem("language", lang);
   }
 
   const translate = (key: string): string => {

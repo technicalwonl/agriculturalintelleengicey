@@ -1,5 +1,7 @@
 "use client"
 
+import { safeLocalStorage } from "./storage";
+
 export interface AlertMessage {
   type: "sms" | "whatsapp"
   phoneNumber: string
@@ -24,10 +26,12 @@ export class SMSWhatsAppService {
       this.alerts.push(alert)
       console.log("[v0] SMS sent to", phoneNumber, ":", message)
 
-      // Store in localStorage
-      const stored = JSON.parse(localStorage.getItem("sms_alerts") || "[]")
-      stored.push(alert)
-      localStorage.setItem("sms_alerts", JSON.stringify(stored))
+      // Store in safeLocalStorage (client-side only)
+      if (typeof window !== 'undefined') {
+        const stored = JSON.parse(safeLocalStorage.getItem("sms_alerts") || "[]");
+        stored.push(alert);
+        safeLocalStorage.setItem("sms_alerts", JSON.stringify(stored));
+      }
 
       resolve(true)
     })
@@ -45,10 +49,12 @@ export class SMSWhatsAppService {
       this.alerts.push(alert)
       console.log("[v0] WhatsApp sent to", phoneNumber, ":", message)
 
-      // Store in localStorage
-      const stored = JSON.parse(localStorage.getItem("whatsapp_alerts") || "[]")
-      stored.push(alert)
-      localStorage.setItem("whatsapp_alerts", JSON.stringify(stored))
+      // Store in safeLocalStorage (client-side only)
+      if (typeof window !== 'undefined') {
+        const stored = JSON.parse(safeLocalStorage.getItem("whatsapp_alerts") || "[]");
+        stored.push(alert);
+        safeLocalStorage.setItem("whatsapp_alerts", JSON.stringify(stored));
+      }
 
       resolve(true)
     })

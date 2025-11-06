@@ -192,12 +192,14 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
   },
 }
 
+import { safeLocalStorage } from "./storage";
+
 export class LanguageManager {
   private language: LanguageCode = "en"
 
   setLanguage(lang: LanguageCode): void {
-    this.language = lang
-    localStorage.setItem("language", lang)
+    this.language = lang;
+    safeLocalStorage.setItem("language", lang);
   }
 
   getLanguage(): LanguageCode {
@@ -209,9 +211,11 @@ export class LanguageManager {
   }
 
   loadSavedLanguage(): void {
-    const saved = localStorage.getItem("language") as LanguageCode
-    if (saved && translations[saved]) {
-      this.language = saved
+    if (typeof window !== 'undefined') {
+      const saved = safeLocalStorage.getItem("language") as LanguageCode;
+      if (saved && translations[saved]) {
+        this.language = saved;
+      }
     }
   }
 }
