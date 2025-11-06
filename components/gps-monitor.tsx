@@ -22,7 +22,7 @@ export function GPSMonitor({ onLocationUpdate }: GPSMonitorProps) {
 
   const fallbackRegions = [
     { id: "punjab", name: "Punjab" },
-    { id: "maharashtra", name: "Maharashtra" },
+    { id: "telangana", name: "Telangana" },
     { id: "karnataka", name: "Karnataka" },
     { id: "tamil-nadu", name: "Tamil Nadu" },
     { id: "uttar-pradesh", name: "Uttar Pradesh" },
@@ -86,10 +86,22 @@ export function GPSMonitor({ onLocationUpdate }: GPSMonitorProps) {
 
   if (error && showFallback)
     return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-amber-600">
-          <AlertCircle className="w-4 h-4" />
-          {error}
+      <div className="space-y-4">
+        {error && (
+          <div className="p-3 sm:p-4 bg-red-50 text-red-700 rounded-md flex items-start space-x-2 text-sm sm:text-base">
+            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div className="break-words">{error}</div>
+          </div>
+        )}
+        <div className="pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFallback(!showFallback)}
+            className="w-full sm:w-auto text-xs sm:text-sm"
+          >
+            {showFallback ? translate('useGPS') || 'Use GPS Location' : translate('selectRegion') || 'Select Region Manually'}
+          </Button>
         </div>
         <div className="grid grid-cols-2 gap-2">
           {fallbackRegions.map((r) => (
@@ -108,35 +120,37 @@ export function GPSMonitor({ onLocationUpdate }: GPSMonitorProps) {
     )
 
   return (
-    <Card className="p-4 bg-green-950 border-green-700">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-green-400" />
-          <span className="font-semibold text-green-100">{translate("gps_location")}</span>
-        </div>
-        {location && region && (
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-green-300">{translate("region") || "Region"}</p>
-              <p className="text-green-100 font-medium">{region.region}</p>
-            </div>
-            <div>
-              <p className="text-green-300">Coordinates</p>
-              <p className="text-green-100 font-medium">
-                {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
-              </p>
-            </div>
-            <div>
-              <p className="text-green-300">{translate("soil_moisture") || "Soil Type"}</p>
-              <p className="text-green-100 font-medium">{region.soilType}</p>
-            </div>
-            <div>
-              <p className="text-green-300">Avg Temp</p>
-              <p className="text-green-100 font-medium">{region.avgTemp}°C</p>
-            </div>
-          </div>
-        )}
+    <Card className="p-4 sm:p-6 space-y-4 w-full">
+      <div className="flex items-center space-x-2">
+        <MapPin className="h-5 w-5 text-green-600 flex-shrink-0" />
+        <h3 className="text-lg font-semibold truncate">{translate('gpsTitle') || 'Farm Location'}</h3>
       </div>
+      {location && region && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="space-y-1 p-3 bg-gray-50 rounded-md">
+            <p className="text-xs sm:text-sm text-gray-500">{translate('latitude') || 'Latitude'}</p>
+            <p className="font-mono text-sm sm:text-base break-all">
+              {location?.latitude?.toFixed(6) || '-'}
+            </p>
+          </div>
+          <div className="space-y-1 p-3 bg-gray-50 rounded-md">
+            <p className="text-xs sm:text-sm text-gray-500">{translate('longitude') || 'Longitude'}</p>
+            <p className="font-mono text-sm sm:text-base break-all">
+              {location?.longitude?.toFixed(6) || '-'}
+            </p>
+          </div>
+          <div className="space-y-1 p-3 bg-gray-50 rounded-md">
+            <p className="text-xs sm:text-sm text-gray-500">{translate('accuracy') || 'Accuracy'}</p>
+            <p className="font-mono text-sm sm:text-base">
+              {location?.accuracy ? `${location.accuracy.toFixed(2)}m` : '-'}
+            </p>
+          </div>
+          <div className="space-y-1 p-3 bg-gray-50 rounded-md">
+            <p className="text-xs sm:text-sm text-gray-500">{translate('region') || 'Region'}</p>
+            <p className="text-sm sm:text-base">{region?.name || '-'}</p>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }
