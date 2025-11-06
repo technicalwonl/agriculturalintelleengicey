@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: macro_fusion_db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - fusion_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: macro_fusion_api
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URI: mongodb://root:password@mongodb:27017
+      LOG_LEVEL: INFO
+      FASTAPI_ENV: production
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - fusion_network
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Scheduler Service
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: macro_fusion_scheduler
+    environment:
+      MONGODB_URI: mongodb://root:password@mongodb:27017
+      SCHEDULER_TIME_UTC: "02:00"
+      LOG_LEVEL: INFO
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - scheduler_logs:/app/logs
+    networks:
+      - fusion_network
+    command: python scheduler_v2.py
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: macro_fusion_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - fusion_network
+    command: npm run dev
+
+volumes:
+  mongo_data:
+  scheduler_logs:
+
+networks:
+  fusion_network:
+    driver: bridge
